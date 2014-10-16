@@ -2,19 +2,30 @@
 
 
 ## Loading and preprocessing the data
-Before we do too much, let's load some handy libraries:
+To get started, I loaded some libraries to assist in data analysis.
 
 1. `dplyr` provides handy data manipulation tools and the `%>%` pipe operator.
 2. `ggplot2` makes it easy to create modern charts.
 
 
 ```r
-  library(dplyr,warn.conflicts=F)
-  library(ggplot2,warn.conflicts=F)
+  require(dplyr,warn.conflicts=F)
+```
+
+```
+## Loading required package: dplyr
+```
+
+```r
+  require(ggplot2,warn.conflicts=F)
+```
+
+```
+## Loading required package: ggplot2
 ```
 
 
-First, we'll download the data if it hasn't been already, then unzip it (again, checking if it has or hasn't been unzipped).
+Then I downloaded the data, checking to see if it the data already exists on disk. When the data is available, I unzipped it, again checking to make sure it hasn't already been done.
 
 
 ```r
@@ -28,7 +39,7 @@ First, we'll download the data if it hasn't been already, then unzip it (again, 
     }
 ```
 
-Next, we read all the data into a single object: activity. We'll want the date column to be a date, so we'll convert it to POSIXct.
+Next, I read all the data into a single object, activity, then converted the date field to from a character class to POSIXct.
 
 
 ```r
@@ -41,7 +52,7 @@ Next, we read all the data into a single object: activity. We'll want the date c
 
 ## What is mean total number of steps taken per day?
 
-To answer this question, let's group the data by date and calculate some summary statistics: 
+To determine the total number of steps taken per day, I grouped the data by date and calculated some summary statistics: 
 
 * total number of steps
 * mean number of steps
@@ -57,7 +68,7 @@ To answer this question, let's group the data by date and calculate some summary
       )
 ```
 
-Now, let's take a look at the total number of steps that we just calculated with a quick histogram to get a picture of the frequencies:
+With that data in hand, I looked at the total number of steps per day with a quick histogram, developing a picture of the frequencies:
 
 ```r
   hist(stepmeans$totalsteps,xlab = 'Total Steps',col='blue',)
@@ -65,7 +76,7 @@ Now, let's take a look at the total number of steps that we just calculated with
 
 ![](./PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
 
-And the data itself, also including median for the sake of clarity:
+Behind that histogram is the calcultaed data itself. Below, I'm also including median for the sake of clarity:
 
 ```r
   stepmeans
@@ -141,7 +152,7 @@ And the data itself, also including median for the sake of clarity:
 
 ## What is the average daily activity pattern?
 
-If we group the data by time interval, then summarize it to calculate the mean number of steps taken each interval, we'll have the data we need to answer this question.
+To determine if any sorts of patterns exists by time, I grouped the data by time interval, then summarized it to calculate the mean number of steps taken each interval.
 
 
 ```r
@@ -151,7 +162,7 @@ If we group the data by time interval, then summarize it to calculate the mean n
     arrange(interval)
 ```
 
-Let's take a look at that data as a line plot with the mean number of steps on the y axis and the interval throughout the day on the x axis.
+I ploted the mean number of steps on the y axis against the time interval on the x axis as a line plot to get a high level overview of daily patterns.
 
 ```r
   plot(meansteps ~ interval, data=pattern,type='l',ylab='mean steps',xlab='interval')
@@ -159,7 +170,7 @@ Let's take a look at that data as a line plot with the mean number of steps on t
 
 ![](./PA1_template_files/figure-html/unnamed-chunk-8-1.png) 
 
-It seems that the interval with the most amount of steps is 835:
+It seems that the interval with the most amount of steps is 8:35 am:
 
 ```r
   pattern %>%
@@ -177,9 +188,10 @@ It seems that the interval with the most amount of steps is 835:
   
 
 ## Imputing missing values
-Unfortunately, we're missing a lot of data in this dataset:
+Unfortunately, much of the data in this set is missing:
 
 ```r
+  #number of rows with missing data
   sum(!complete.cases(activity))
 ```
 
@@ -187,9 +199,18 @@ Unfortunately, we're missing a lot of data in this dataset:
 ## [1] 2304
 ```
 
-2304 rows with missing data means that we're missing over 13% of our data. 
+```r
+  #percentage of data missing
+  sum(!complete.cases(activity))/nrow(activity)
+```
 
-However, it's only the step data that's missing--we've still got date and interval. There's not a distinguishable pattern for the number of steps take per day, whereas there is a clear pattern for the time interval. So let's use the mean value of steps for the interval for any missing data.
+```
+## [1] 0.1311475
+```
+
+2304 rows with missing data means that over 13% of our data is missing.
+
+However, only the step data is missing--date and interval data is still available. There is not a distinguishable pattern for the number of steps take per day, whereas there is a clear pattern for the time interval. With that in mind, I imputed missing data with the mean value of steps for the each interval.
 
 
 ```r
@@ -199,7 +220,7 @@ However, it's only the step data that's missing--we've still got date and interv
     select( steps = imputedsteps,date,interval)
 ```
 
-Now that we've filled in the values, let's recalulate the total, mean and median steps by day.
+After I imputed any missing data, I recalulated the total, mean and median steps by day.
 
 ```r
   stepmeans2  <- activity %>%
@@ -210,7 +231,7 @@ Now that we've filled in the values, let's recalulate the total, mean and median
       )
 ```
 
-And let's compare the new totals to the old:
+And then compared the new totals to the old with a histogram. Below, the blue data is the original histogram and the red figure displays the imputed data.
 
 ```r
   par(mfrow=c(1,2))
@@ -220,7 +241,7 @@ And let's compare the new totals to the old:
 
 ![](./PA1_template_files/figure-html/unnamed-chunk-13-1.png) 
 
-Let's also look at the new means and median for each day, then compare them both to the original data to see what sort of impact our calculations had:
+I also looked at the new means and median for each day, then compared them both to the original data to see what sort of impact the imputation had:
 
 
 ```r
@@ -253,7 +274,7 @@ Apparently, imputing new values based on the mean number of steps per interval i
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-To answer this question, we'll need to add a new factor variable, determining whether the day was a weekday or a weekend.
+To answer this question, I needed to add a new factor variable, determining whether the day was a weekday or a weekend.
 
 
 ```r
@@ -263,7 +284,7 @@ To answer this question, we'll need to add a new factor variable, determining wh
             )
 ```
 
-Now, let's plot the data showing the mean number of steps for each time interval with panels for weekends vs. weekdays.
+Next, I plotted the data showing the mean number of steps for each time interval with panels for weekends vs. weekdays.
 
 
 ```r
